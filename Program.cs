@@ -16,13 +16,17 @@ namespace ADHDOverlay
 
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-
+        /* uFlags
+         * 0x0001-Retains the current size (ignores the cx and cy parameters)
+         * 0x0002-Retains the current position (ignores the X and Y parameters)
+         * 0x0003-It retains both the current size and position of the window
+         * 0x0004-Retains the current Z order (ignores the hWndInsertAfter parameter)
+         */
         [DllImport("user32.dll", SetLastError = true)]
         static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, string className, string windowTitle);
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-        //global varable
         //Get Screen size
         public static int screenWidth { get; set; }
         public static int screenHeight { get; set; }
@@ -33,105 +37,52 @@ namespace ADHDOverlay
             screenWidth = Screen.PrimaryScreen.Bounds.Width;
             Console.WriteLine("Screen Width: " + screenWidth);
             Console.WriteLine("Screen Height: " + screenHeight);
-            //open notepad
-            /*try
-            {
-                Parallel.Invoke(() =>
-                {
-                    Notepad();
-                },
-                () =>
-                {
-                    WebPage();
-                });
-            }
-            catch ( AggregateException e )
-            {
-                Console.WriteLine("An action has thrown an exception. THIS WAS UNEXPECTED.\n{0}", e.InnerException.ToString());
-            }
-           // Notepad();
-           //
-            */
-           WebPage();
+           openWindows();
         }
-        static void Notepad()
+        static void openWindows()
         {
-            Process notePadProcess = Process.Start("notepad", "readme.txt");
+            Random rnd = new Random();
+            //OPening windows
+            Process.Start("notepad", "readme.txt");
             Thread.Sleep(1000);
-            // Find (the first-in-Z-order) Notepad window.
-            IntPtr hWnd = FindWindow("Notepad", null);
-
-            // If found, position it.
-            if (hWnd != IntPtr.Zero)
-            {
-                int windowX = 2000;
-                int windowY = 500;
-                int changeX = 1;
-                int changeY = 1;
-                int appWidth = 150;
-                int appHeight = 150;
-                SetWindowPos(hWnd, IntPtr.Zero, 0, 0, appWidth, appHeight, 0x0002 | 0x0004);
-                Thread.Sleep(1000);
-                while (true)
-                {
-                    SetWindowPos(hWnd, IntPtr.Zero, windowX, windowY, 0, 0, 0x0001 | 0x0004);
-                    if (windowX + appWidth+170 >= screenWidth)
-                    {
-                        changeX = -1;
-                    }
-                    if (windowX <= 0)
-                    {
-                        changeX = 1;
-                    }
-                    if (windowY + appHeight >= screenHeight)
-                    {
-                        changeY = -1;
-                    }
-                    if (windowY <= 0)
-                    {
-                        changeY = 1;
-                    }
-                    windowX += changeX;
-                    windowY += changeY;
-                    Debug.WriteLine("Notepad: " + windowX + " " + windowY);
-                    Thread.Sleep(10);
-                }
-            }
-            else
-            {
-                Debug.WriteLine("Error window not found");
-            }
-
-        }
-        static void WebPage()
-        {
             Process.Start("chrome.exe", "https://bouncingdvdlogo.com");
             Thread.Sleep(1000);
-            Process.Start("chrome.exe", "--new-window https://www.youtube.com/watch?v=eRXE8Aebp7s");
+            Process.Start("chrome.exe", "--new-window https://www.youtube.com/shorts/0t4ClCzI1sA");
+            Thread.Sleep(1000);
+            Process.Start("chrome.exe", "--new-window https://www.youtube.com/watch?v=dvjy6V4vLlI");
+            Thread.Sleep(1000);
+            Process.Start("chrome.exe", "--new-window https://optical.toys/spinning-duck/");
             Thread.Sleep(1000);
             // 
+            IntPtr notePad = FindWindow("Notepad", null);
             IntPtr window0 = FindWindow("Chrome_WidgetWin_1", null);
             IntPtr window1 = FindWindowEx(IntPtr.Zero, window0, "Chrome_WidgetWin_1", null);
-            Debug.WriteLine(window0);
-            Debug.WriteLine(window1);
-
-            // If found, position it.
+            IntPtr window2 = FindWindowEx(IntPtr.Zero, window1, "Chrome_WidgetWin_1", null);
+            IntPtr window3 = FindWindowEx(IntPtr.Zero, window2, "Chrome_WidgetWin_1", null);
             if (window0 != IntPtr.Zero && window1 != IntPtr.Zero)
             {
-                IntPtr[] windowCount = { window0, window1 };
-                int[] windowX = { 0,1000 };
-                int[] windowY = { 0, 0 };
-                int[] changeX = { 1, 0 };
-                int[] changeY = { 0, 1 };
-                int[] appWidth = { 100, 100 };
-                int[] appHeight = { 600, 600 };
-                //starting width
-                SetWindowPos(window0, IntPtr.Zero, 0, 0, appWidth[0], appHeight[0], 0x0002 | 0x0004);
-                SetWindowPos(window1, IntPtr.Zero, 0, 0, appWidth[1], appHeight[1], 0x0002 | 0x0004);
+                IntPtr[] windowCount = { notePad, window0, window1, window2, window3 };
+                int[] windowX = { rnd.Next(screenWidth), rnd.Next(screenWidth), rnd.Next(screenWidth), rnd.Next(screenWidth), rnd.Next(screenWidth) };
+                int[] windowY = { rnd.Next(screenHeight), rnd.Next(screenHeight), rnd.Next(screenHeight), rnd.Next(screenHeight), rnd.Next(screenHeight) };
+                int[] changeX = { 1, 1, 0, 1, 0 };
+                int[] changeY = { 1, 0, 1, 1, 1 };
+                int[] appWidth = { 150,600, 70, 100, 100};
+                int[] appHeight = { 150,600, 700, 600, 600 };
+                //starting 
+                int count = 0;
+                foreach (var i in windowCount)
+                {
+                    Console.WriteLine(i);
+                    Console.WriteLine(count);
+                    Console.WriteLine(windowCount[count]);
+                    SetWindowPos(i, IntPtr.Zero, 0, 0, appWidth[count], appHeight[count], 0x0002 | 0x0004);
+                    SetWindowPos(i, new IntPtr(-1), 0, 0, 0, 0, 0x0003);
+                    count++;
+                }
                 Thread.Sleep(1000);
                 while (true)
                 {
-                    int count = 0;
+                    count = 0;
                     foreach (var i in windowCount)
                     {
                         // Get the rectangle of the current window
