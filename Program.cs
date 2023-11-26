@@ -61,8 +61,8 @@ namespace ADHDOverlay
             screenWidth = Screen.PrimaryScreen.Bounds.Width;
             Debug.WriteLine("Screen Width: " + screenWidth);
             Debug.WriteLine("Screen Height: " + screenHeight);
-            //WebPages();
-            OpenAI(config["openAIKey"]);
+            WebPages();
+            //OpenAI(config["openAIKey"]);
         }
         static void WebPages()
         {
@@ -70,13 +70,13 @@ namespace ADHDOverlay
             //OPening windows
             //Process.Start("notepad", "readme.txt");
             //Thread.Sleep(1000);
-            Process.Start("chrome.exe", "https://bouncingdvdlogo.com");
+            Process.Start(@"C:\Program Files\Google\Chrome\Application\chrome.exe", "https://bouncingdvdlogo.com");
             Thread.Sleep(1000);
-            Process.Start("chrome.exe", "--new-window https://puginarug.com");
+            Process.Start(@"C:\Program Files\Google\Chrome\Application\chrome.exe", "--new-window https://puginarug.com");
             Thread.Sleep(1000);
-            Process.Start("chrome.exe", "--new-window https://floatingqrcode.com");
+            Process.Start(@"C:\Program Files\Google\Chrome\Application\chrome.exe", "--new-window https://floatingqrcode.com");
             Thread.Sleep(1000);
-            Process.Start("chrome.exe", "--new-window https://optical.toys/spinning-duck/");
+            Process.Start(@"C:\Program Files\Google\Chrome\Application\chrome.exe", "--new-window https://optical.toys/spinning-duck/");
             Thread.Sleep(1000);
             // 
             // Enumerate all Chrome windows
