@@ -6,6 +6,9 @@ using System.Windows.Forms;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
+using Microsoft.Extensions.Configuration;
+using Azure.AI.OpenAI;
 
 namespace ADHDOverlay
 {
@@ -18,7 +21,7 @@ namespace ADHDOverlay
 
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-        /* uFlags
+        /* uFlags so I dont forget
          * 0x0001-Retains the current size (ignores the cx and cy parameters)
          * 0x0002-Retains the current position (ignores the X and Y parameters)
          * 0x0003-It retains both the current size and position of the window
@@ -46,11 +49,20 @@ namespace ADHDOverlay
 
         static void Main(string[] args)
         {
+            //
+            var root = Directory.GetCurrentDirectory();
+            var envPath = Path.Combine(root, "APIKey.env");
+            EnvReader.Load(envPath);
+            Debug.WriteLine(envPath);
+            var config = new ConfigurationBuilder().AddEnvironmentVariables().Build();
+            Debug.WriteLine(config["openAIKey"]);
+            //
             screenHeight = Screen.PrimaryScreen.Bounds.Height;
             screenWidth = Screen.PrimaryScreen.Bounds.Width;
-            Console.WriteLine("Screen Width: " + screenWidth);
-            Console.WriteLine("Screen Height: " + screenHeight);
-           WebPages();
+            Debug.WriteLine("Screen Width: " + screenWidth);
+            Debug.WriteLine("Screen Height: " + screenHeight);
+            //WebPages();
+            OpenAI(config["openAIKey"]);
         }
         static void WebPages()
         {
@@ -101,9 +113,9 @@ namespace ADHDOverlay
                 int count = 0;
                 foreach (var i in windowCount)
                 {
-                    Console.WriteLine(i);
-                    Console.WriteLine(count);
-                    Console.WriteLine(windowCount[count]);
+                    Debug.WriteLine(i);
+                    Debug.WriteLine(count);
+                    Debug.WriteLine(windowCount[count]);
                     SetWindowPos(i, IntPtr.Zero, 0, 0, appWidth[count], appHeight[count], 0x0002 | 0x0004);
                     SetWindowPos(i, new IntPtr(-1), 0, 0, 0, 0, 0x0003);
                     count++;
@@ -150,6 +162,37 @@ namespace ADHDOverlay
                 Debug.WriteLine("Error window not found");
             }
 
+        }
+        static async void OpenAI(string openAIKey)
+        {
+            var client = new OpenAIClient(openAIKey, new OpenAIClientOptions());
+            /* OpenAi chat roles and meaning
+             * System:Internal instruction for the convosation and used to guide model behavior. ie "you are a helpful assistant"
+             * User:  is a prompt from the user
+             * Assistant: is a response to the user prompt
+             */
+            var chatCompletionsOptions = new ChatCompletionsOptions()
+            {
+                DeploymentName = "gpt-3.5-turbo",
+                Messages =
+                {
+                    new ChatMessage(ChatRole.System, "You are a helpful assistant. You will talk like a pirate."),
+                    new ChatMessage(ChatRole.User, "Can you help me?"),
+                    new ChatMessage(ChatRole.Assistant, "Arrrr! Of course, me hearty! What can I do for ye?"),
+                    new ChatMessage(ChatRole.User, "What's the best way to train a parrot?"),
+                }
+            };
+            await foreach (StreamingChatCompletionsUpdate chatUpdate in client.GetChatCompletionsStreaming(chatCompletionsOptions))
+            {
+                if (chatUpdate.Role.HasValue)
+                {
+                    Console.Write($"{chatUpdate.Role.Value.ToString().ToUpperInvariant()}: ");
+                }
+                if (!string.IsNullOrEmpty(chatUpdate.ContentUpdate))
+                {
+                    Console.Write(chatUpdate.ContentUpdate);
+                }
+            }
         }
 
         public struct RECT
